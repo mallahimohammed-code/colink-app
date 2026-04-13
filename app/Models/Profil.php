@@ -18,4 +18,9 @@ class Profil extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function candidatures()
+    {
+        return $this->hasMany(Candidature::class);
+    }
 }
