@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\CandidatureDeposee;
+use App\Events\StatutCandidatureMis;
 use App\Models\Candidature;
 use App\Models\Offre;
 use Illuminate\Http\JsonResponse;
@@ -41,6 +43,8 @@ class CandidatureController extends Controller
             'message' => $data['message'] ?? null,
             'statut' => 'en_attente',
         ]);
+
+        CandidatureDeposee::dispatch($candidature);
 
         return response()->json($candidature, 201);
     }
@@ -90,7 +94,12 @@ class CandidatureController extends Controller
             'statut' => ['required', 'in:en_attente,acceptee,refusee'],
         ]);
 
+        $ancien = $candidature->statut;
         $candidature->update(['statut' => $data['statut']]);
+
+        if ($ancien !== $data['statut']) {
+            StatutCandidatureMis::dispatch($candidature, $ancien, $data['statut']);
+        }
 
         return response()->json($candidature);
     }
