@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CandidatureController;
 use App\Http\Controllers\OffreController;
 use App\Http\Controllers\ProfilController;
 use Illuminate\Support\Facades\Route;
@@ -22,11 +23,17 @@ Route::middleware('auth:api')->group(function () {
         Route::put('/profil', [ProfilController::class, 'update']);
         Route::post('/profil/competences', [ProfilController::class, 'attachCompetence']);
         Route::delete('/profil/competences/{competence}', [ProfilController::class, 'detachCompetence']);
+
+        Route::post('/offres/{offre}/candidater', [CandidatureController::class, 'store']);
+        Route::get('/mes-candidatures', [CandidatureController::class, 'mine']);
     });
 
     Route::middleware('role:recruteur')->group(function () {
         Route::post('/offres', [OffreController::class, 'store']);
         Route::put('/offres/{offre}', [OffreController::class, 'update']);
         Route::delete('/offres/{offre}', [OffreController::class, 'destroy']);
+
+        Route::get('/offres/{offre}/candidatures', [CandidatureController::class, 'forOffre']);
+        Route::patch('/candidatures/{candidature}/statut', [CandidatureController::class, 'updateStatut']);
     });
 });
