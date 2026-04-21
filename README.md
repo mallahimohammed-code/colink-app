@@ -78,6 +78,12 @@ Ajouter le header sur les routes protégées :
 Authorization: Bearer <access_token>
 ```
 
+## Collection Postman
+
+- Fichier de collection : `postman/Colink API.postman_collection.json`
+- Import direct dans Postman : **Import** → **Upload Files** → sélectionner ce fichier.
+- La collection couvre : inscription, connexion, CRUD profil, CRUD offres, candidatures, changement de statut, et cas d'erreur (`401`, `403`, `422`).
+
 ## Routes
 
 Toutes les routes sont préfixées par `/api`.

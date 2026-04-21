@@ -1,0 +1,878 @@
+{
+  "info": {
+    "_postman_id": "8f7566f7-0547-47be-9ac6-c424725d9b11",
+    "name": "Colink API",
+    "description": "Collection complete: auth, profil, offres, candidatures, admin + erreurs 401/403/422.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54197231",
+    "_collection_link": "https://go.postman.co/collection/54197231-8f7566f7-0547-47be-9ac6-c424725d9b11?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "1) Auth",
+      "item": [
+        {
+          "name": "Register Recruiter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201 created', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('candidate_token', json.access_token);",
+                  "const req = JSON.parse(pm.request.body.raw);",
+                  "pm.collectionVariables.set('candidate_email', req.email);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Peter Parker\",\n  \"email\": \"peter.parker@colink.test\",\n  \"password\": \"i.am.spiderman\",\n  \"role\": \"recruteur\",\n  \"password_confirmation\": \"i.am.spiderman\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Recruiter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 ok', function () { pm.response.to.have.status(200); });",
+                  "pm.collectionVariables.set('recruiter_token', pm.response.json().access_token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{recruiter_email}}\",\n  \"password\": \"{{recruiter_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 ok', function () { pm.response.to.have.status(200); });",
+                  "pm.collectionVariables.set('admin_token', pm.response.json().access_token);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin.generated@colink.test\",\n  \"password\": \"{{admin_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Error 401 - Me without token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Me (candidate)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{candidate_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh (candidate)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) { pm.collectionVariables.set('candidate_token', pm.response.json().access_token); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{candidate_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "refresh"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2) Profil (Candidat)",
+      "item": [
+        {
+          "name": "Create Profil",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{candidate_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titre\": \"Developpeur Backend\",\n  \"bio\": \"Candidat specialise Laravel.\",\n  \"localisation\": \"Rabat\",\n  \"disponible\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/profil",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "profil"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Profil",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{candidate_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/profil",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "profil"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profil",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{candidate_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bio\": \"Mise a jour du profil.\",\n  \"disponible\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/profil",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "profil"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Competence to Profil",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{candidate_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"competence_id\": {{competence_id}},\n  \"niveau\": \"intermediaire\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/profil/competences",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "profil",
+                "competences"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Competence from Profil",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{candidate_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/profil/competences/{{competence_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "profil",
+                "competences",
+                "{{competence_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3) Offres",
+      "item": [
+        {
+          "name": "List Active Offres (filters + pagination + sort)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/offres?localisation=Rabat&type=CDI&sort=desc&page=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "offres"
+              ],
+              "query": [
+                {
+                  "key": "localisation",
+                  "value": "Rabat"
+                },
+                {
+                  "key": "type",
+                  "value": "CDI"
+                },
+                {
+                  "key": "sort",
+                  "value": "desc"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Offre (recruiter)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 created', function () { pm.response.to.have.status(201); });",
+                  "pm.collectionVariables.set('offre_id', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiter_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titre\": \"Backend Laravel Engineer\",\n  \"description\": \"Offre creee via Postman.\",\n  \"localisation\": \"Casablanca\",\n  \"type\": \"CDI\",\n  \"actif\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/offres",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "offres"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Offre Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/offres/{{offre_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "offres",
+                "{{offre_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Own Offre (recruiter owner)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiter_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"localisation\": \"Rabat\",\n  \"type\": \"CDD\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/offres/{{offre_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "offres",
+                "{{offre_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Error 422 - Create Offre invalid payload",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', function () { pm.response.to.have.status(422); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiter_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Missing required fields\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/offres",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "offres"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Own Offre (recruiter owner)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiter_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/offres/{{offre_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "offres",
+                "{{offre_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4) Candidatures",
+      "item": [
+        {
+          "name": "Candidater (candidate)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 created', function () { pm.expect([201,409]).to.include(pm.response.code); });",
+                  "if (pm.response.code === 201) pm.collectionVariables.set('candidature_id', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{candidate_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Je souhaite postuler a cette offre.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/offres/{{forbidden_offre_id}}/candidater",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "offres",
+                "{{forbidden_offre_id}}",
+                "candidater"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mes candidatures (candidate)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('candidature_id')) {",
+                  "  const body = pm.response.json();",
+                  "  if (body && body.data && body.data.length > 0) pm.collectionVariables.set('candidature_id', body.data[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{candidate_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/mes-candidatures",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "mes-candidatures"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Candidatures recues d'une offre (recruiter owner)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiter_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/offres/{{forbidden_offre_id}}/candidatures",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "offres",
+                "{{forbidden_offre_id}}",
+                "candidatures"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Changer statut candidature (recruiter)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiter_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statut\": \"acceptee\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/candidatures/{{candidature_id}}/statut",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatures",
+                "{{candidature_id}}",
+                "statut"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5) Administration",
+      "item": [
+        {
+          "name": "Admin - List Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users?role=candidat&search=candidate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "role",
+                  "value": "candidat"
+                },
+                {
+                  "key": "search",
+                  "value": "candidate"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin - Toggle Offre actif/inactif",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/offres/{{forbidden_offre_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "offres",
+                "{{forbidden_offre_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin - Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{user_id_to_delete}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{user_id_to_delete}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.collectionVariables.get('candidate_password')) pm.collectionVariables.set('candidate_password', 'password123');",
+          "if (!pm.collectionVariables.get('recruiter_email')) pm.collectionVariables.set('recruiter_email', 'recruiter@example.com');",
+          "if (!pm.collectionVariables.get('recruiter_password')) pm.collectionVariables.set('recruiter_password', 'password');",
+          "if (!pm.collectionVariables.get('admin_email')) pm.collectionVariables.set('admin_email', 'admin1@colink.test');",
+          "if (!pm.collectionVariables.get('admin_password')) pm.collectionVariables.set('admin_password', 'password');"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000/api"
+    },
+    {
+      "key": "candidate_email",
+      "value": ""
+    },
+    {
+      "key": "candidate_password",
+      "value": "password123"
+    },
+    {
+      "key": "candidate_token",
+      "value": ""
+    },
+    {
+      "key": "recruiter_email",
+      "value": "recruiter@example.com"
+    },
+    {
+      "key": "recruiter_password",
+      "value": "password"
+    },
+    {
+      "key": "recruiter_token",
+      "value": ""
+    },
+    {
+      "key": "admin_email",
+      "value": "admin1@colink.test"
+    },
+    {
+      "key": "admin_password",
+      "value": "password"
+    },
+    {
+      "key": "admin_token",
+      "value": ""
+    },
+    {
+      "key": "offre_id",
+      "value": ""
+    },
+    {
+      "key": "forbidden_offre_id",
+      "value": "1"
+    },
+    {
+      "key": "competence_id",
+      "value": "1"
+    },
+    {
+      "key": "candidature_id",
+      "value": ""
+    },
+    {
+      "key": "user_id_to_delete",
+      "value": "2"
+    }
+  ]
+}
