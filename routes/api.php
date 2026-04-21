@@ -41,6 +41,7 @@ Route::middleware('auth:api')->group(function () {
     });
 
     Route::middleware('role:admin')->prefix('admin')->group(function () {
+        Route::get('/stats', [AdminController::class, 'stats']);
         Route::get('/users', [AdminController::class, 'users']);
         Route::delete('/users/{user}', [AdminController::class, 'destroyUser']);
         Route::patch('/offres/{offre}', [AdminController::class, 'toggleOffre']);

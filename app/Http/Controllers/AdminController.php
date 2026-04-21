@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Candidature;
 use App\Models\Offre;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -10,6 +11,33 @@ use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
+    public function stats(): JsonResponse
+    {
+        return response()->json([
+            'users' => [
+                'total' => User::query()->count(),
+                'by_role' => [
+                    'admin' => User::query()->where('role', 'admin')->count(),
+                    'recruteur' => User::query()->where('role', 'recruteur')->count(),
+                    'candidat' => User::query()->where('role', 'candidat')->count(),
+                ],
+            ],
+            'offres' => [
+                'total' => Offre::query()->count(),
+                'active' => Offre::query()->where('actif', true)->count(),
+                'inactive' => Offre::query()->where('actif', false)->count(),
+            ],
+            'candidatures' => [
+                'total' => Candidature::query()->count(),
+                'by_statut' => [
+                    'en_attente' => Candidature::query()->where('statut', 'en_attente')->count(),
+                    'acceptee' => Candidature::query()->where('statut', 'acceptee')->count(),
+                    'refusee' => Candidature::query()->where('statut', 'refusee')->count(),
+                ],
+            ],
+        ]);
+    }
+
     public function users(Request $request): JsonResponse
     {
         $filters = $request->validate([
