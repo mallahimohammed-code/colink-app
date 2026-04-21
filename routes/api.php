@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CandidatureController;
+use App\Http\Controllers\CompetenceController;
 use App\Http\Controllers\OffreController;
 use App\Http\Controllers\ProfilController;
 use Illuminate\Support\Facades\Route;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+Route::get('/competences', [CompetenceController::class, 'index']);
 Route::get('/offres', [OffreController::class, 'index']);
 Route::get('/offres/{offre}', [OffreController::class, 'show']);
 
